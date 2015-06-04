@@ -132,7 +132,6 @@ process(void)
 	while (!done) {
 		done = 1;
 		TAILQ_FOREACH_SAFE(p, &points, e, tmp) {
-			/* calculate the distance of this point from all cluster centers */
 			for (i = 0; i < nclusters; i++)
 				dists[i] = distance(p, &clusters[i].center);
 
@@ -146,7 +145,6 @@ process(void)
 				}
 			}
 
-			/* if point is already part of the nearest cluster, skip it */
 			if (hasmember(&clusters[mini], p))
 				continue;
 
