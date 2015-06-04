@@ -196,8 +196,6 @@ void
 usage(void)
 {
 	fprintf(stderr, "usage: %s [-e] [-n clusters] file\n", argv0);
-	fprintf(stderr, " -e\tinclude empty clusters\n");
-	fprintf(stderr, " -n\tset number of clusters, defaults to 8\n");
 	exit(1);
 }
 
