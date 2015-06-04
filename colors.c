@@ -244,15 +244,6 @@ initpoints(char *f)
 }
 
 void
-printpoints(void)
-{
-	struct point *p;
-
-	TAILQ_FOREACH(p, &points, e)
-		printf("R: %02x, G: %02x, B: %02x\n", p->x, p->y, p->z);
-}
-
-void
 usage(void)
 {
 	fprintf(stderr, "usage: %s [-n clusters] png-file\n", argv0);
