@@ -7,8 +7,6 @@ file it outputs a colormap[1] to stdout.
 
     # ./colors input.png | ./scripts/tohtml.sh > output.html
 
-Running the tool multiple times will produce slightly different
-colormaps.
 
 [0] http://saturn.2f30.org/colors/input.png
 [1] http://saturn.2f30.org/colors/output.html

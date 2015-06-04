@@ -29,6 +29,7 @@ size_t nclusters = 8;
 TAILQ_HEAD(points, point) points;
 size_t npoints;
 int eflag;
+int rflag;
 
 int
 distance(struct point *p1, struct point *p2)
@@ -71,7 +72,17 @@ adjclusters(struct cluster *c, size_t n)
 }
 
 void
-initcluster(struct cluster *c)
+initcluster_fixed(struct cluster *c, int i)
+{
+	TAILQ_INIT(&c->members);
+	c->nmembers = 0;
+	c->center.x = i * (256 / nclusters);
+	c->center.y = i * (256 / nclusters);
+	c->center.z = i * (256 / nclusters);
+}
+
+void
+initcluster_rand(struct cluster *c, int unused)
 {
 	struct point *p;
 	int i, sel;
@@ -86,6 +97,8 @@ initcluster(struct cluster *c)
 	c->center = *p;
 }
 
+void (*initcluster)(struct cluster *c, int i) = initcluster_fixed;
+
 void
 initclusters(struct cluster *c, size_t n)
 {
@@ -95,7 +108,7 @@ initclusters(struct cluster *c, size_t n)
 	if (!clusters)
 		err(1, "malloc");
 	for (i = 0; i < n; i++)
-		initcluster(&clusters[i]);
+		initcluster(&clusters[i], i);
 }
 
 void
@@ -195,7 +208,7 @@ printclusters(void)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-e] [-n clusters] file\n", argv0);
+	fprintf(stderr, "usage: %s [-er] [-n clusters] file\n", argv0);
 	exit(1);
 }
 
@@ -207,6 +220,9 @@ main(int argc, char *argv[])
 	ARGBEGIN {
 	case 'e':
 		eflag = 1;
+		break;
+	case 'r':
+		rflag = 1;
 		break;
 	case 'n':
 		errno = 0;
@@ -221,7 +237,10 @@ main(int argc, char *argv[])
 	if (argc != 1)
 		usage();
 
-	srand(time(NULL));
+	if (rflag) {
+		srand(time(NULL));
+		initcluster = initcluster_rand;
+	}
 	TAILQ_INIT(&points);
 	parseimg(argv[0], fillpoints);
 	initclusters(clusters, nclusters);
