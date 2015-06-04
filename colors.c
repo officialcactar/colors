@@ -6,8 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <png.h>
 #include "arg.h"
+#include "colors.h"
 #include "queue.h"
 
 struct point {
@@ -28,17 +28,6 @@ size_t nclusters = 4;
 TAILQ_HEAD(points, point) points;
 size_t npoints;
 int eflag;
-
-void *
-emalloc(size_t n)
-{
-	void *p;
-
-	p = malloc(n);
-	if (!p)
-		err(1, "malloc");
-	return p;
-}
 
 int
 distance(struct point *p1, struct point *p2)
@@ -101,7 +90,9 @@ initclusters(struct cluster *c, size_t n)
 {
 	size_t i;
 
-	clusters = emalloc(sizeof(*clusters) * n);
+	clusters = malloc(sizeof(*clusters) * n);
+	if (!clusters)
+		err(1, "malloc");
 	for (i = 0; i < n; i++)
 		initcluster(&clusters[i]);
 }
@@ -134,7 +125,10 @@ process(void)
 	struct point *p, *tmp;
 	int *dists, mind, mini, i, done = 0;
 
-	dists = emalloc(nclusters * sizeof(*dists));
+	dists = malloc(nclusters * sizeof(*dists));
+	if (!dists)
+		err(1, "malloc");
+
 	while (!done) {
 		done = 1;
 		TAILQ_FOREACH_SAFE(p, &points, e, tmp) {
@@ -170,7 +164,23 @@ process(void)
 }
 
 void
-printcolors(void)
+fillpoints(int r, int g, int b)
+{
+	struct point *p;
+
+	p = malloc(sizeof(*p));
+	if (!p)
+		err(1, "malloc");
+	p->x = r;
+	p->y = g;
+	p->z = b;
+	p->c = NULL;
+	TAILQ_INSERT_TAIL(&points, p, e);
+	npoints++;
+}
+
+void
+printclusters(void)
 {
 	int i;
 
@@ -180,67 +190,6 @@ printcolors(void)
 			       clusters[i].c.x,
 			       clusters[i].c.y,
 			       clusters[i].c.z);
-}
-
-void
-initpoints(char *f)
-{
-	FILE *fp;
-	png_structp png_ptr;
-	png_infop info_ptr;
-	png_byte hdr[8];
-	png_bytep *rows;
-	int width, height;
-	int x, y;
-
-	if (!(fp = fopen(f, "r")))
-		err(1, "fopen %s", f);
-	fread(hdr, 1, 8, fp);
-	if (png_sig_cmp(hdr, 0, 8))
-		errx(1, "not a png file");
-
-	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	info_ptr = png_create_info_struct(png_ptr);
-	if (!png_ptr || !info_ptr || setjmp(png_jmpbuf(png_ptr)))
-		errx(1, "failed to initialize libpng");
-
-	png_init_io(png_ptr, fp);
-	png_set_add_alpha(png_ptr, 255, PNG_FILLER_AFTER);
-	png_set_gray_to_rgb(png_ptr);
-	png_set_sig_bytes(png_ptr, 8);
-	png_read_info(png_ptr, info_ptr);
-
-	width = png_get_image_width(png_ptr, info_ptr);
-	height = png_get_image_height(png_ptr, info_ptr);
-	png_read_update_info(png_ptr, info_ptr);
-
-	if (setjmp(png_jmpbuf(png_ptr)))
-		errx(1, "failed to read image");
-
-	rows = emalloc(sizeof(*rows) * height);
-	for (y = 0; y < height; y++)
-		rows[y] = emalloc(png_get_rowbytes(png_ptr, info_ptr));
-	png_read_image(png_ptr, rows);
-
-	for (y = 0; y < height; y++) {
-		png_byte *row = rows[y];
-		for (x = 0; x < width; x++) {
-			png_byte *p = &row[x * 4];
-			struct point *newp = emalloc(sizeof(*newp));
-			newp->x = p[0];
-			newp->y = p[1];
-			newp->z = p[2];
-			newp->c = NULL;
-			TAILQ_INSERT_TAIL(&points, newp, e);
-			npoints++;
-		}
-	}
-
-	for (y = 0; y < height; y++)
-		free(rows[y]);
-	free(rows);
-
-	fclose(fp);
 }
 
 void
@@ -276,9 +225,9 @@ main(int argc, char *argv[])
 
 	srand(time(NULL));
 	TAILQ_INIT(&points);
-	initpoints(argv[0]);
+	parseimg(argv[0], fillpoints);
 	initclusters(clusters, nclusters);
 	process();
-	printcolors();
+	printclusters();
 	return 0;
 }
