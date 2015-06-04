@@ -28,6 +28,17 @@ size_t nclusters = 8;
 TAILQ_HEAD(points, point) points;
 size_t npoints;
 
+void *
+emalloc(size_t n)
+{
+	void *p;
+
+	p = malloc(n);
+	if (!p)
+		err(1, "malloc");
+	return p;
+}
+
 int
 distance(struct point *p1, struct point *p2)
 {
@@ -90,7 +101,7 @@ initclusters(struct cluster *c, size_t n)
 {
 	size_t i;
 
-	clusters = malloc(sizeof(*clusters) * n);
+	clusters = emalloc(sizeof(*clusters) * n);
 	for (i = 0; i < n; i++)
 		initcluster(&clusters[i]);
 }
@@ -123,7 +134,7 @@ process(void)
 	struct point *p, *tmp;
 	int *dists, mind, mini, i, done = 0;
 
-	dists = malloc(nclusters * sizeof(*dists));
+	dists = emalloc(nclusters * sizeof(*dists));
 	while (!done) {
 		done = 1;
 		TAILQ_FOREACH_SAFE(p, &points, e, tmp) {
@@ -206,16 +217,16 @@ initpoints(char *f)
 	if (setjmp(png_jmpbuf(png_ptr)))
 		errx(1, "failed to read image");
 
-	rows = malloc(sizeof(*rows) * height);
+	rows = emalloc(sizeof(*rows) * height);
 	for (y = 0; y < height; y++)
-		rows[y] = malloc(png_get_rowbytes(png_ptr, info_ptr));
+		rows[y] = emalloc(png_get_rowbytes(png_ptr, info_ptr));
 	png_read_image(png_ptr, rows);
 
 	for (y = 0; y < height; y++) {
 		png_byte *row = rows[y];
 		for (x = 0; x < width; x++) {
 			png_byte *p = &row[x * 4];
-			struct point *newp = malloc(sizeof(*newp));
+			struct point *newp = emalloc(sizeof(*newp));
 			newp->x = p[0];
 			newp->y = p[1];
 			newp->z = p[2];
