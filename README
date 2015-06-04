@@ -1,0 +1,5 @@
+What is it?
+===========
+
+A simple program to pick out "dominant" colors from PNG files.
+It similar to strings(1) but for pictures.
