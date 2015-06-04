@@ -196,9 +196,9 @@ printclusters(void)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-n clusters] [-e] png-file\n", argv0);
-	fprintf(stderr, " -n\tset number of clusters, defaults to 4\n");
+	fprintf(stderr, "usage: %s [-e] [-n clusters] png-file\n", argv0);
 	fprintf(stderr, " -e\tinclude empty clusters\n");
+	fprintf(stderr, " -n\tset number of clusters, defaults to 4\n");
 	exit(1);
 }
 
