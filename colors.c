@@ -24,7 +24,7 @@ struct cluster {
 
 char *argv0;
 struct cluster *clusters;
-size_t nclusters = 4;
+size_t nclusters = 8;
 TAILQ_HEAD(points, point) points;
 size_t npoints;
 int eflag;
@@ -196,7 +196,7 @@ usage(void)
 {
 	fprintf(stderr, "usage: %s [-e] [-n clusters] file\n", argv0);
 	fprintf(stderr, " -e\tinclude empty clusters\n");
-	fprintf(stderr, " -n\tset number of clusters, defaults to 4\n");
+	fprintf(stderr, " -n\tset number of clusters, defaults to 8\n");
 	exit(1);
 }
 
