@@ -17,7 +17,7 @@ struct point {
 };
 
 struct cluster {
-	struct point c;
+	struct point center;
 	TAILQ_HEAD(members, point) members;
 	size_t nmembers;
 };
@@ -57,7 +57,7 @@ adjcluster(struct cluster *c)
 	newc.x /= c->nmembers;
 	newc.y /= c->nmembers;
 	newc.z /= c->nmembers;
-	c->c = newc;
+	c->center = newc;
 }
 
 void
@@ -82,7 +82,7 @@ initcluster(struct cluster *c)
 	TAILQ_FOREACH(p, &points, e)
 		if (i++ == sel)
 			break;
-	c->c = *p;
+	c->center = *p;
 }
 
 void
@@ -134,7 +134,7 @@ process(void)
 		TAILQ_FOREACH_SAFE(p, &points, e, tmp) {
 			/* calculate the distance of this point from all cluster centers */
 			for (i = 0; i < nclusters; i++)
-				dists[i] = distance(p, &clusters[i].c);
+				dists[i] = distance(p, &clusters[i].center);
 
 			/* find the cluster that is nearest to the point */
 			mind = dists[0];
@@ -188,9 +188,9 @@ printclusters(void)
 	for (i = 0; i < nclusters; i++)
 		if (clusters[i].nmembers || eflag)
 			printf("#%02x%02x%02x\n",
-			       clusters[i].c.x,
-			       clusters[i].c.y,
-			       clusters[i].c.z);
+			       clusters[i].center.x,
+			       clusters[i].center.y,
+			       clusters[i].center.z);
 }
 
 void
