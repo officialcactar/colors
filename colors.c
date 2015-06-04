@@ -27,6 +27,7 @@ struct cluster *clusters;
 size_t nclusters = 4;
 TAILQ_HEAD(points, point) points;
 size_t npoints;
+int eflag;
 
 void *
 emalloc(size_t n)
@@ -174,10 +175,11 @@ printcolors(void)
 	int i;
 
 	for (i = 0; i < nclusters; i++)
-		printf("#%02x%02x%02x\n",
-		       clusters[i].c.x,
-		       clusters[i].c.y,
-		       clusters[i].c.z);
+		if (clusters[i].nmembers || eflag)
+			printf("#%02x%02x%02x\n",
+			       clusters[i].c.x,
+			       clusters[i].c.y,
+			       clusters[i].c.z);
 }
 
 void
@@ -244,8 +246,9 @@ initpoints(char *f)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-n clusters] png-file\n", argv0);
+	fprintf(stderr, "usage: %s [-n clusters] [-e] png-file\n", argv0);
 	fprintf(stderr, " -n\tset number of clusters, defaults to 4\n");
+	fprintf(stderr, " -e\tinclude empty clusters\n");
 	exit(1);
 }
 
@@ -255,6 +258,9 @@ main(int argc, char *argv[])
 	char *e;
 
 	ARGBEGIN {
+	case 'e':
+		eflag = 1;
+		break;
 	case 'n':
 		errno = 0;
 		nclusters = strtol(EARGF(usage()), &e, 10);
