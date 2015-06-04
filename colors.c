@@ -54,12 +54,11 @@ void
 adjcluster(struct cluster *c)
 {
 	struct point *p;
-	struct point newc;
+	struct point newc = { 0 };
 
 	if (!c->nmembers)
 		return;
 
-	newc.x = newc.y = newc.z = 0;
 	TAILQ_FOREACH(p, &c->members, e) {
 		newc.x += p->x;
 		newc.y += p->y;
