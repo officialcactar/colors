@@ -136,7 +136,7 @@ process(void)
 			for (i = 0; i < nclusters; i++)
 				dists[i] = distance(p, &clusters[i].c);
 
-			/* find the cluster that is closest to the point */
+			/* find the cluster that is nearest to the point */
 			mind = dists[0];
 			mini = 0;
 			for (i = 1; i < nclusters; i++) {
@@ -146,10 +146,11 @@ process(void)
 				}
 			}
 
-			/* if point is already part of the closest cluster, skip it */
+			/* if point is already part of the nearest cluster, skip it */
 			if (hasmember(&clusters[mini], p))
 				continue;
 
+			/* not done yet, move point to nearest cluster */
 			done = 0;
 			for (i = 0; i < nclusters; i++) {
 				if (hasmember(&clusters[i], p)) {
