@@ -24,7 +24,7 @@ struct cluster {
 
 char *argv0;
 struct cluster *clusters;
-size_t nclusters = 8;
+size_t nclusters = 4;
 TAILQ_HEAD(points, point) points;
 size_t npoints;
 
@@ -174,11 +174,10 @@ printcolors(void)
 	int i;
 
 	for (i = 0; i < nclusters; i++)
-		if (clusters[i].nmembers)
-			printf("#%02x%02x%02x\n",
-			       clusters[i].c.x,
-			       clusters[i].c.y,
-			       clusters[i].c.z);
+		printf("#%02x%02x%02x\n",
+		       clusters[i].c.x,
+		       clusters[i].c.y,
+		       clusters[i].c.z);
 }
 
 void
@@ -246,7 +245,7 @@ void
 usage(void)
 {
 	fprintf(stderr, "usage: %s [-n clusters] png-file\n", argv0);
-	fprintf(stderr, " -n\tset number of clusters, defaults to 8\n");
+	fprintf(stderr, " -n\tset number of clusters, defaults to 4\n");
 	exit(1);
 }
 
