@@ -1,7 +1,8 @@
 VERSION = 0.1
 
 PREFIX = /usr/local
-LDFLAGS = -lm -lpng
+LDFLAGS = -L/usr/local/lib -lm -lpng
+CPPFLAGS = -I/usr/local/include
 CFLAGS = -Wall -O3
 OBJ = colors.o png.o
 BIN = colors
