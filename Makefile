@@ -11,7 +11,7 @@ all: $(BIN)
 $(BIN): $(OBJ)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $(OBJ) $(LDFLAGS)
 
-colors.o: queue.h
+colors.o: arg.h queue.h
 
 clean:
 	rm -f $(BIN) $(OBJ)
