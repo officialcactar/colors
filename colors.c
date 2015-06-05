@@ -14,7 +14,7 @@
 #define LEN(x) (sizeof (x) / sizeof *(x))
 
 struct point {
-	int x, y, z;
+	long x, y, z;
 	struct cluster *c;
 	TAILQ_ENTRY(point) e;
 };
@@ -34,10 +34,10 @@ int eflag;
 int rflag;
 int hflag;
 
-int
+long
 distance(struct point *p1, struct point *p2)
 {
-	int dx, dy, dz;
+	long dx, dy, dz;
 
 	dx = (p1->x - p2->x) * (p1->x - p2->x);
 	dy = (p1->y - p2->y) * (p1->y - p2->y);
@@ -157,7 +157,8 @@ void
 process(void)
 {
 	struct point *p, *tmp;
-	int *dists, mind, mini, i, done = 0;
+	int mini, i, done = 0;
+	long *dists, mind;
 
 	dists = malloc(nclusters * sizeof(*dists));
 	if (!dists)
@@ -219,7 +220,7 @@ printclusters(void)
 
 	for (i = 0; i < nclusters; i++)
 		if (clusters[i].nmembers || eflag)
-			printf("#%02x%02x%02x\n",
+			printf("#%02lx%02lx%02lx\n",
 			       clusters[i].center.x,
 			       clusters[i].center.y,
 			       clusters[i].center.z);
