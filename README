@@ -1,7 +1,7 @@
 What is it?
 ===========
 
-A simple program to pick out "dominant" colors from PNG files.
+A simple program to extract "dominant" colors from PNG files.
 It is similar to strings(1) but for pictures.  For a given input[0]
 file it outputs a colormap[1] to stdout.
 
