@@ -14,7 +14,7 @@
 #define LEN(x) (sizeof (x) / sizeof *(x))
 
 struct point {
-	long x, y, z;
+	int x, y, z;
 	struct cluster *c;
 	TAILQ_ENTRY(point) e;
 };
@@ -34,10 +34,10 @@ int eflag;
 int rflag;
 int hflag;
 
-long
+int
 distance(struct point *p1, struct point *p2)
 {
-	long dx, dy, dz;
+	int dx, dy, dz;
 
 	dx = (p1->x - p2->x) * (p1->x - p2->x);
 	dy = (p1->y - p2->y) * (p1->y - p2->y);
@@ -50,18 +50,20 @@ adjcluster(struct cluster *c)
 {
 	struct point *p;
 	struct point newc = { 0 };
+	long x, y, z;
 
 	if (!c->nmembers)
 		return;
 
+	x = y = z = 0;
 	TAILQ_FOREACH(p, &c->members, e) {
-		newc.x += p->x;
-		newc.y += p->y;
-		newc.z += p->z;
+		x += p->x;
+		y += p->y;
+		z += p->z;
 	}
-	newc.x /= c->nmembers;
-	newc.y /= c->nmembers;
-	newc.z /= c->nmembers;
+	newc.x = x / c->nmembers;
+	newc.y = y / c->nmembers;
+	newc.z = z / c->nmembers;
 	c->center = newc;
 }
 
@@ -159,8 +161,7 @@ void
 process(void)
 {
 	struct point *p, *tmp;
-	int mini, i, done = 0;
-	long *dists, mind;
+	int *dists, mind, mini, i, done = 0;
 
 	dists = malloc(nclusters * sizeof(*dists));
 	if (!dists)
@@ -222,7 +223,7 @@ printclusters(void)
 
 	for (i = 0; i < nclusters; i++)
 		if (clusters[i].nmembers || eflag)
-			printf("#%02lx%02lx%02lx\n",
+			printf("#%02x%02x%02x\n",
 			       clusters[i].center.x,
 			       clusters[i].center.y,
 			       clusters[i].center.z);
