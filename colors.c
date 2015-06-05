@@ -11,6 +11,8 @@
 #include "colors.h"
 #include "queue.h"
 
+#define LEN(x) (sizeof (x) / sizeof *(x))
+
 struct point {
 	int x, y, z;
 	struct cluster *c;
@@ -30,6 +32,7 @@ TAILQ_HEAD(points, point) points;
 size_t npoints;
 int eflag;
 int rflag;
+int hflag;
 
 int
 distance(struct point *p1, struct point *p2)
@@ -95,6 +98,23 @@ initcluster_rand(struct cluster *c, int unused)
 		if (i++ == sel)
 			break;
 	c->center = *p;
+}
+
+struct point huetab[] = {
+	{ .x = 0xff, .y = 0x00, .z = 0x00 }, /* red */
+	{ .x = 0xff, .y = 0x00, .z = 0xff }, /* purple */
+	{ .x = 0x00, .y = 0x00, .z = 0xff }, /* blue */
+	{ .x = 0x00, .y = 0xff, .z = 0xff }, /* cyan */
+	{ .x = 0x00, .y = 0xff, .z = 0x00 }, /* green */
+	{ .x = 0xff, .y = 0xff, .z = 0x00 }, /* yellow */
+};
+
+void
+initcluster_hue(struct cluster *c, int i)
+{
+	TAILQ_INIT(&c->members);
+	c->nmembers = 0;
+	c->center = huetab[i];
 }
 
 void (*initcluster)(struct cluster *c, int i) = initcluster_fixed;
@@ -208,7 +228,7 @@ printclusters(void)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-er] [-n clusters] file\n", argv0);
+	fprintf(stderr, "usage: %s [-erh] [-n clusters] file\n", argv0);
 	exit(1);
 }
 
@@ -223,6 +243,9 @@ main(int argc, char *argv[])
 		break;
 	case 'r':
 		rflag = 1;
+		break;
+	case 'h':
+		hflag = 1;
 		break;
 	case 'n':
 		errno = 0;
@@ -240,6 +263,10 @@ main(int argc, char *argv[])
 	if (rflag) {
 		srand(time(NULL));
 		initcluster = initcluster_rand;
+	}
+	if (hflag) {
+		nclusters = LEN(huetab);
+		initcluster = initcluster_hue;
 	}
 	TAILQ_INIT(&points);
 	parseimg(argv[0], fillpoints);
