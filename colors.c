@@ -75,13 +75,13 @@ adjclusters(struct cluster *c, size_t n)
 }
 
 void
-initcluster_fixed(struct cluster *c, int i)
+initcluster_brightness(struct cluster *c, int i)
 {
 	TAILQ_INIT(&c->members);
 	c->nmembers = 0;
-	c->center.x = i * (256 / nclusters);
-	c->center.y = i * (256 / nclusters);
-	c->center.z = i * (256 / nclusters);
+	c->center.x = i * (0xff / nclusters);
+	c->center.y = i * (0xff / nclusters);
+	c->center.z = i * (0xff / nclusters);
 }
 
 void
@@ -117,7 +117,7 @@ initcluster_hue(struct cluster *c, int i)
 	c->center = huetab[i];
 }
 
-void (*initcluster)(struct cluster *c, int i) = initcluster_fixed;
+void (*initcluster)(struct cluster *c, int i) = initcluster_brightness;
 
 void
 initclusters(struct cluster *c, size_t n)
@@ -268,6 +268,10 @@ main(int argc, char *argv[])
 		nclusters = LEN(huetab);
 		initcluster = initcluster_hue;
 	}
+	/* max 256 brightness steps */
+	if (initcluster == initcluster_brightness && nclusters > 0xff)
+		nclusters = 0xff;
+
 	TAILQ_INIT(&points);
 	parseimg(argv[0], fillpoints);
 	initclusters(clusters, nclusters);
