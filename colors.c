@@ -250,7 +250,7 @@ main(int argc, char *argv[])
 	case 'n':
 		errno = 0;
 		nclusters = strtol(EARGF(usage()), &e, 10);
-		if (*e || errno)
+		if (*e || errno || !nclusters)
 			errx(1, "invalid number");
 		break;
 	default:
