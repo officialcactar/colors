@@ -79,9 +79,9 @@ initcluster_brightness(struct cluster *c, int i)
 {
 	TAILQ_INIT(&c->members);
 	c->nmembers = 0;
-	c->center.x = i * (0xff / nclusters);
-	c->center.y = i * (0xff / nclusters);
-	c->center.z = i * (0xff / nclusters);
+	c->center.x = i;
+	c->center.y = i;
+	c->center.z = i;
 }
 
 void
@@ -118,17 +118,19 @@ initcluster_hue(struct cluster *c, int i)
 }
 
 void (*initcluster)(struct cluster *c, int i) = initcluster_brightness;
+size_t initspace = 0xff;
 
 void
 initclusters(struct cluster *c, size_t n)
 {
 	size_t i;
+	size_t step = initspace / n;
 
 	clusters = malloc(sizeof(*clusters) * n);
 	if (!clusters)
 		err(1, "malloc");
 	for (i = 0; i < n; i++)
-		initcluster(&clusters[i], i);
+		initcluster(&clusters[i], i * step);
 }
 
 void
@@ -264,14 +266,15 @@ main(int argc, char *argv[])
 	if (rflag) {
 		srand(time(NULL));
 		initcluster = initcluster_rand;
+		initspace = 0xff * 0xff * 0xff;
 	}
 	if (hflag) {
-		nclusters = LEN(huetab);
 		initcluster = initcluster_hue;
+		initspace = LEN(huetab);
 	}
-	/* max 256 brightness steps */
-	if (initcluster == initcluster_brightness && nclusters > 0xff)
-		nclusters = 0xff;
+	/* cap number of clusters */
+	if (nclusters > initspace)
+		nclusters = initspace;
 
 	TAILQ_INIT(&points);
 	parseimg(argv[0], fillpoints);
