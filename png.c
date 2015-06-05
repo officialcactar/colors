@@ -11,9 +11,8 @@ parseimg(char *f, void (*fn)(int, int, int))
 	png_structp png_struct_p;
 	png_infop png_info_p;
 	png_bytepp png_row_p;
-	png_uint_32 width, height;
+	png_uint_32 y, x, width, height;
 	int depth, color, interlace;
-	int y, x;
 	FILE *fp;
 
 	if (!(fp = fopen(f, "r")))
