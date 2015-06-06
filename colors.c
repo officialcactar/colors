@@ -102,25 +102,53 @@ initcluster_rand(struct cluster *c, int unused)
 	c->center = *p;
 }
 
-struct point huetab[] = {
-	{ .x = 0xff, .y = 0x00, .z = 0x00 }, /* red */
-	{ .x = 0xff, .y = 0x00, .z = 0xff }, /* purple */
-	{ .x = 0x00, .y = 0x00, .z = 0xff }, /* blue */
-	{ .x = 0x00, .y = 0xff, .z = 0xff }, /* cyan */
-	{ .x = 0x00, .y = 0xff, .z = 0x00 }, /* green */
-	{ .x = 0xff, .y = 0xff, .z = 0x00 }, /* yellow */
+struct hue {
+	int rgb[3];
+	int i; /* index in rgb[] of color to change next */
+} huetab[] = {
+	{ { 0xff, 0x00, 0x00 }, 2 }, /* red */
+	{ { 0xff, 0x00, 0xff }, 0 }, /* purple */
+	{ { 0x00, 0x00, 0xff }, 1 }, /* blue */
+	{ { 0x00, 0xff, 0xff }, 2 }, /* cyan */
+	{ { 0x00, 0xff, 0x00 }, 0 }, /* green */
+	{ { 0xff, 0xff, 0x00 }, 1 }, /* yellow */
 };
+
+struct point
+hueselect(int i)
+{
+	struct point p;
+	struct hue h;
+	int idx, mod;
+
+	idx = i / 256;
+	mod = i % 256;
+	h = huetab[idx];
+
+	switch (h.rgb[h.i]) {
+	case 0x00:
+		h.rgb[h.i] += mod;
+		break;
+	case 0xff:
+		h.rgb[h.i] -= mod;
+		break;
+	}
+	p.x = h.rgb[0];
+	p.y = h.rgb[1];
+	p.z = h.rgb[2];
+	return p;
+}
 
 void
 initcluster_hue(struct cluster *c, int i)
 {
 	TAILQ_INIT(&c->members);
 	c->nmembers = 0;
-	c->center = huetab[i];
+	c->center = hueselect(i);
 }
 
 void (*initcluster)(struct cluster *c, int i) = initcluster_brightness;
-size_t initspace = 0xff;
+size_t initspace = 256;
 
 void
 initclusters(struct cluster *c, size_t n)
@@ -267,11 +295,11 @@ main(int argc, char *argv[])
 	if (rflag) {
 		srand(time(NULL));
 		initcluster = initcluster_rand;
-		initspace = 0xff * 0xff * 0xff;
+		initspace = 256 * 256 * 256;
 	}
 	if (hflag) {
 		initcluster = initcluster_hue;
-		initspace = LEN(huetab);
+		initspace = LEN(huetab) * 256;
 	}
 	/* cap number of clusters */
 	if (nclusters > initspace)
