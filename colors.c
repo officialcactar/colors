@@ -117,7 +117,7 @@ struct hue {
 struct point
 hueselect(int i)
 {
-	struct point p;
+	struct point p = { 0 };
 	struct hue h;
 	int idx, mod;
 
