@@ -7,9 +7,9 @@ cat << EOF
 <style>
 .color-sample {
    float: left;
-   margin: 3px;
-   width: 100px;
-   height: 100px;
+   margin: 2px;
+   width: 64px;
+   height: 64px;
    border-radius: 3px;
 }
 </style>
