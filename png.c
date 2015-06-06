@@ -36,6 +36,8 @@ parseimg(char *f, void (*fn)(int, int, int))
 		png_byte *row = png_row_p[y];
 		for (x = 0; x < width; x++) {
 			png_byte *p = &row[x * 4];
+			if (color == PNG_COLOR_TYPE_RGB_ALPHA && !p[3])
+				continue;
 			fn(p[0], p[1], p[2]);
 		}
 	}
