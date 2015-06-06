@@ -33,6 +33,7 @@ size_t npoints;
 int eflag;
 int rflag;
 int hflag;
+int pflag;
 
 int
 distance(struct point *p1, struct point *p2)
@@ -87,17 +88,14 @@ initcluster_brightness(struct cluster *c, int i)
 }
 
 void
-initcluster_rand(struct cluster *c, int unused)
+initcluster_pixel(struct cluster *c, int i)
 {
 	struct point *p;
-	int i, sel;
 
 	TAILQ_INIT(&c->members);
 	c->nmembers = 0;
-	sel = rand() % npoints;
-	i = 0;
 	TAILQ_FOREACH(p, &points, e)
-		if (i++ == sel)
+		if (i-- == 0)
 			break;
 	c->center = *p;
 }
@@ -153,14 +151,16 @@ size_t initspace = 256;
 void
 initclusters(struct cluster *c, size_t n)
 {
-	size_t i;
+	size_t i, next;
 	size_t step = initspace / n;
 
 	clusters = malloc(sizeof(*clusters) * n);
 	if (!clusters)
 		err(1, "malloc");
-	for (i = 0; i < n; i++)
-		initcluster(&clusters[i], i * step);
+	for (i = 0; i < n; i++) {
+		next = rflag ? rand() % initspace : i * step;
+		initcluster(&clusters[i], next);
+	}
 }
 
 void
@@ -260,7 +260,7 @@ printclusters(void)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-erh] [-n clusters] file\n", argv0);
+	fprintf(stderr, "usage: %s [-er] [-h | -p] [-n clusters] file\n", argv0);
 	exit(1);
 }
 
@@ -278,6 +278,11 @@ main(int argc, char *argv[])
 		break;
 	case 'h':
 		hflag = 1;
+		pflag = 0;
+		break;
+	case 'p':
+		pflag = 1;
+		hflag = 0;
 		break;
 	case 'n':
 		errno = 0;
@@ -292,10 +297,14 @@ main(int argc, char *argv[])
 	if (argc != 1)
 		usage();
 
-	if (rflag) {
+	TAILQ_INIT(&points);
+	parseimg(argv[0], fillpoints);
+
+	if (rflag)
 		srand(time(NULL));
-		initcluster = initcluster_rand;
-		initspace = 256 * 256 * 256;
+	if (pflag) {
+		initcluster = initcluster_pixel;
+		initspace = npoints;
 	}
 	if (hflag) {
 		initcluster = initcluster_hue;
@@ -305,8 +314,6 @@ main(int argc, char *argv[])
 	if (nclusters > initspace)
 		nclusters = initspace;
 
-	TAILQ_INIT(&points);
-	parseimg(argv[0], fillpoints);
 	initclusters(clusters, nclusters);
 	process();
 	printclusters();

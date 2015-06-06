@@ -1,4 +1,4 @@
-.Dd June 5, 2015
+.Dd June 6, 2015
 .Dt COLORS 1
 .Os
 .Sh NAME
@@ -6,23 +6,25 @@
 .Nd extract colors from pictures
 .Sh SYNOPSIS
 .Nm colors
-.Op Fl e
-.Op Fl r
-.Op Fl h
+.Op Fl er
+.Op Fl h | Fl p
 .Op Fl n Ar clusters
 .Ar file
 .Sh DESCRIPTION
 .Nm
 is a simple tool that uses k-means clustering to extract dominant colors
-from pictures.
+from pictures.  By default it selects initial clusters based on brightness
+steps.
 .Sh OPTIONS
 .Bl -tag -width Ds
 .It Fl e
 Print empty clusters as well.
 .It Fl r
-Select initial clusters randomly.
+Randomize cluster selection.
 .It Fl h
 Select initial clusters from the hue domain.
+.It Fl p
+Select initial clusters from the image pixel space.
 .It Fl n Ar clusters
 .El
 Set the number of clusters.  It defaults to 8.
