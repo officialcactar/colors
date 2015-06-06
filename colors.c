@@ -2,7 +2,6 @@
 #include <err.h>
 #include <errno.h>
 #include <limits.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -43,7 +42,7 @@ distance(struct point *p1, struct point *p2)
 	dx = (p1->x - p2->x) * (p1->x - p2->x);
 	dy = (p1->y - p2->y) * (p1->y - p2->y);
 	dz = (p1->z - p2->z) * (p1->z - p2->z);
-	return sqrtf(dx + dy + dz) + 0.5f;
+	return dx + dy + dz;
 }
 
 void
