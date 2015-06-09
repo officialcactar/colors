@@ -33,6 +33,7 @@ int eflag;
 int rflag;
 int hflag;
 int pflag;
+int mflag;
 
 int
 distance(struct point *p1, struct point *p2)
@@ -46,7 +47,7 @@ distance(struct point *p1, struct point *p2)
 }
 
 void
-adjcluster(struct cluster *c)
+adjmeans(struct cluster *c)
 {
 	struct point *p;
 	struct point newc = { 0 };
@@ -67,13 +68,72 @@ adjcluster(struct cluster *c)
 	c->center = newc;
 }
 
+struct cluster *curcluster;
+int
+pointcmp(const void *a, const void *b)
+{
+	struct point *p1 = *(struct point **)a;
+	struct point *p2 = *(struct point **)b;
+	int d1, d2;
+
+	d1 = distance(&curcluster->center, p1);
+	d2 = distance(&curcluster->center, p2);
+	return d1 - d2;
+}
+
+void
+adjmedians(struct cluster *c)
+{
+	struct point *p, **tab;
+	struct point newc = { 0 };
+	long x, y, z;
+	size_t i;
+
+	if (!c->nmembers)
+		return;
+
+	/* create a table out of the list to make sorting easy */
+	tab = malloc(c->nmembers * sizeof(*tab));
+	if (!tab)
+		err(1, "malloc");
+	i = 0;
+	TAILQ_FOREACH(p, &c->members, e)
+		tab[i++] = p;
+
+	qsort(tab, c->nmembers, sizeof(*tab), pointcmp);
+
+	/* calculate median */
+	x = tab[c->nmembers / 2]->x;
+	y = tab[c->nmembers / 2]->y;
+	z = tab[c->nmembers / 2]->z;
+	if (!(c->nmembers % 2)) {
+		x += tab[c->nmembers / 2 - 1]->x;
+		y += tab[c->nmembers / 2 - 1]->y;
+		z += tab[c->nmembers / 2 - 1]->z;
+		newc.x = x / 2;
+		newc.y = y / 2;
+		newc.z = z / 2;
+	} else {
+		newc.x = x;
+		newc.y = y;
+		newc.z = z;
+	}
+
+	c->center = newc;
+	free(tab);
+}
+
+void (*adjcluster)(struct cluster *c) = adjmeans;
+
 void
 adjclusters(struct cluster *c, size_t n)
 {
 	size_t i;
 
-	for (i = 0; i < n; i++)
+	for (i = 0; i < n; i++) {
+		curcluster = &c[i];
 		adjcluster(&c[i]);
+	}
 }
 
 void
@@ -259,7 +319,7 @@ printclusters(void)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-er] [-h | -p] [-n clusters] file\n", argv0);
+	fprintf(stderr, "usage: %s [-emr] [-h | -p] [-n clusters] file\n", argv0);
 	exit(1);
 }
 
@@ -271,6 +331,9 @@ main(int argc, char *argv[])
 	ARGBEGIN {
 	case 'e':
 		eflag = 1;
+		break;
+	case 'm':
+		mflag = 1;
 		break;
 	case 'r':
 		rflag = 1;
@@ -299,6 +362,8 @@ main(int argc, char *argv[])
 	TAILQ_INIT(&points);
 	parseimg(argv[0], fillpoints);
 
+	if (mflag)
+		adjcluster = adjmedians;
 	if (rflag)
 		srand(time(NULL));
 	if (pflag) {
