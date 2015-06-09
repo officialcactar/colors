@@ -40,9 +40,15 @@ distance(struct point *p1, struct point *p2)
 {
 	int dx, dy, dz;
 
-	dx = (p1->x - p2->x) * (p1->x - p2->x);
-	dy = (p1->y - p2->y) * (p1->y - p2->y);
-	dz = (p1->z - p2->z) * (p1->z - p2->z);
+	if (mflag) {
+		dx = abs(p1->x - p2->x);
+		dy = abs(p1->y - p2->y);
+		dz = abs(p1->z - p2->z);
+	} else {
+		dx = (p1->x - p2->x) * (p1->x - p2->x);
+		dy = (p1->y - p2->y) * (p1->y - p2->y);
+		dz = (p1->z - p2->z) * (p1->z - p2->z);
+	}
 	return dx + dy + dz;
 }
 
