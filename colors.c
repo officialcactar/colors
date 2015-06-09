@@ -143,7 +143,7 @@ adjclusters(struct cluster *c, size_t n)
 }
 
 void
-initcluster_brightness(struct cluster *c, int i)
+initcluster_greyscale(struct cluster *c, int i)
 {
 	TAILQ_INIT(&c->members);
 	c->nmembers = 0;
@@ -210,7 +210,7 @@ initcluster_hue(struct cluster *c, int i)
 	c->center = hueselect(i);
 }
 
-void (*initcluster)(struct cluster *c, int i) = initcluster_brightness;
+void (*initcluster)(struct cluster *c, int i) = initcluster_greyscale;
 size_t initspace = 256;
 
 void
