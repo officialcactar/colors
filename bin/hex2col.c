@@ -50,7 +50,7 @@ int
 quantization(int rgb[3])
 {
 	int i, tmp, index;
-	int distance = 195364; /* maximum distance between two colors */
+	int distance = 442*442; /* it's always 442 somewhere */
 
 	for (i=0, tmp=0; i<256; i++) {
 		tmp = (rgb[0] - map[i][0]) * (rgb[0] - map[i][0]) +
