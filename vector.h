@@ -9,6 +9,7 @@ struct vector {
 };
 
 void vector_init(struct vector *);
+void vector_free(struct vector *);
 void vector_add(struct vector *, void *);
 void *vector_get(struct vector *, size_t);
 size_t vector_size(struct vector *);
