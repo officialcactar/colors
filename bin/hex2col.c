@@ -2,13 +2,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <math.h>
 
 /*
  * X.org 256 colors palette
  * http://www.calmar.ws/vim/256-xterm-24bit-rgb-color-chart.html
  */
-int xcolor[256][3] = {
+int map[256][3] = {
     {  0,  0,  0}, {128,  0,  0}, {  0,128,  0}, {128,128,  0}, {  0,  0,128}, {128,  0,128}, {  0,128,128}, {192,192,192},
     {128,128,128}, {255,  0,  0}, {  0,255,  0}, {255,255,  0}, {  0,  0,255}, {255,  0,255}, {  0,255,255}, {255,255,255},
     {  0,  0,  0}, {  0,  0, 95}, {  0,  0,135}, {  0,  0,175}, {  0,  0,215}, {  0,  0,255}, {  0, 95,  0}, {  0, 95, 95},
@@ -51,12 +50,12 @@ int
 quantization(int rgb[3])
 {
 	int i, tmp, index;
-	int distance = 442;
+	int distance = 195364; /* maximum distance between two colors */
 
 	for (i=0, tmp=0; i<256; i++) {
-		tmp = sqrt(pow(rgb[0] - xcolor[i][0],2) +
-		           pow(rgb[1] - xcolor[i][1],2) +
-		           pow(rgb[2] - xcolor[i][2],2));
+		tmp = (rgb[0] - map[i][0]) * (rgb[0] - map[i][0]) +
+		      (rgb[1] - map[i][1]) * (rgb[1] - map[i][1]) +
+		      (rgb[2] - map[i][2]) * (rgb[2] - map[i][2]);
 		if (tmp < distance) {
 			distance = tmp;
 			index = i;
