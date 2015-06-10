@@ -9,6 +9,7 @@
 #include "arg.h"
 #include "colors.h"
 #include "queue.h"
+#include "vector.h"
 
 #define LEN(x) (sizeof (x) / sizeof *(x))
 
@@ -25,10 +26,11 @@ struct cluster {
 };
 
 char *argv0;
+
 struct cluster *clusters;
 size_t nclusters = 8;
-TAILQ_HEAD(points, point) points;
-size_t npoints;
+struct vector points;
+
 int eflag;
 int rflag;
 int hflag;
@@ -159,9 +161,7 @@ initcluster_pixel(struct cluster *c, int i)
 
 	TAILQ_INIT(&c->members);
 	c->nmembers = 0;
-	TAILQ_FOREACH(p, &points, e)
-		if (i-- == 0)
-			break;
+	p = vector_get(&points, i);
 	c->center = *p;
 }
 
@@ -253,8 +253,8 @@ hasmember(struct cluster *c, struct point *p)
 void
 process(void)
 {
-	struct point *p, *tmp;
-	int *dists, mind, mini, i, done = 0;
+	struct point *p;
+	int *dists, mind, mini, i, j, done = 0;
 
 	dists = malloc(nclusters * sizeof(*dists));
 	if (!dists)
@@ -262,7 +262,8 @@ process(void)
 
 	while (!done) {
 		done = 1;
-		TAILQ_FOREACH_SAFE(p, &points, e, tmp) {
+		for (j = 0; j < vector_size(&points); j++) {
+			p = vector_get(&points, j);
 			for (i = 0; i < nclusters; i++)
 				dists[i] = distance(p, &clusters[i].center);
 
@@ -305,8 +306,7 @@ fillpoints(int r, int g, int b)
 	p->y = g;
 	p->z = b;
 	p->c = NULL;
-	TAILQ_INSERT_TAIL(&points, p, e);
-	npoints++;
+	vector_add(&points, p);
 }
 
 void
@@ -365,7 +365,7 @@ main(int argc, char *argv[])
 	if (argc != 1)
 		usage();
 
-	TAILQ_INIT(&points);
+	vector_init(&points);
 	parseimg(argv[0], fillpoints);
 
 	if (mflag)
@@ -374,7 +374,7 @@ main(int argc, char *argv[])
 		srand(time(NULL));
 	if (pflag) {
 		initcluster = initcluster_pixel;
-		initspace = npoints;
+		initspace = vector_size(&points);
 	}
 	if (hflag) {
 		initcluster = initcluster_hue;
