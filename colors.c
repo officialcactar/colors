@@ -56,9 +56,11 @@ distance(struct point *p1, struct point *p2)
 int
 pointcmp(struct point *p1, struct point *p2)
 {
-	struct point center = { 0 };
+	unsigned int a, b;
 
-	return distance(&center, p1) - distance(&center, p2);
+	a = p1->x << 16 | p1->y << 8 | p1->z;
+	b = p2->x << 16 | p2->y << 8 | p2->z;
+	return a - b;
 }
 RB_PROTOTYPE(pointtree, point, rb_e, pointcmp)
 RB_GENERATE(pointtree, point, rb_e, pointcmp)
