@@ -262,8 +262,7 @@ process(void)
 
 	while (!done) {
 		done = 1;
-		for (j = 0; j < vector_size(&points); j++) {
-			p = vector_get(&points, j);
+		for (j = 0; (p = vector_get(&points, j)); j++) {
 			for (i = 0; i < nclusters; i++)
 				dists[i] = distance(p, &clusters[i].center);
 

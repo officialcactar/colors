@@ -38,6 +38,8 @@ vector_add(struct vector *v, void *data)
 void *
 vector_get(struct vector *v, size_t i)
 {
+	if (i >= v->s)
+		return NULL;
 	return v->d[i].raw;
 }
 
