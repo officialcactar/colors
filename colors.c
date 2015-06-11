@@ -14,7 +14,9 @@
 #define LEN(x) (sizeof (x) / sizeof *(x))
 
 struct point {
-	int x, y, z;
+	int x;
+	int y;
+	int z;
 	struct cluster *c;
 	TAILQ_ENTRY(point) e;
 };
