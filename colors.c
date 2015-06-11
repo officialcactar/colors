@@ -58,6 +58,7 @@ pointcmp(struct point *p1, struct point *p2)
 
 	return distance(&center, p1) - distance(&center, p2);
 }
+RB_PROTOTYPE(pointtree, point, rb_e, pointcmp)
 RB_GENERATE(pointtree, point, rb_e, pointcmp)
 
 void
