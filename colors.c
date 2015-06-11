@@ -243,13 +243,13 @@ process(void)
 void
 fillpoints(int r, int g, int b)
 {
-	struct point *p, *res;
 	struct point n = { 0 };
+	struct point *p;
 
 	n.x = r, n.y = g, n.z = b;
-	res = RB_FIND(pointtree, &pointhead, &n);
-	if (res) {
-		res->freq++;
+	p = RB_FIND(pointtree, &pointhead, &n);
+	if (p) {
+		p->freq++;
 		return;
 	}
 
