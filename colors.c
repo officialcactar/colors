@@ -34,11 +34,13 @@ struct cluster *clusters;
 size_t nclusters = 8;
 RB_HEAD(pointtree, point) pointhead;
 size_t npoints;
+size_t niters;
 
 int eflag;
 int rflag;
 int hflag;
 int pflag;
+int vflag;
 
 int
 distance(struct point *p1, struct point *p2)
@@ -209,6 +211,7 @@ process(void)
 
 	while (!done) {
 		done = 1;
+		niters++;
 		RB_FOREACH(p, pointtree, &pointhead) {
 			for (i = 0; i < nclusters; i++)
 				dists[i] = distance(p, &clusters[i].center);
@@ -279,9 +282,33 @@ printclusters(void)
 }
 
 void
+printstatistics(void)
+{
+	struct point *p;
+	size_t ntotalpoints = 0;
+	size_t navgcluster = 0;
+	int i;
+
+	RB_FOREACH(p, pointtree, &pointhead)
+		ntotalpoints += p->freq;
+
+	for (i = 0; i < nclusters; i++)
+		TAILQ_FOREACH(p, &clusters[i].pointhead, e)
+			navgcluster++;
+	navgcluster /= nclusters;
+
+	fprintf(stderr, "Total number of points: %zu\n", ntotalpoints);
+	fprintf(stderr, "Number of unique points: %zu\n", npoints);
+	fprintf(stderr, "Number of clusters: %zu\n", nclusters);
+	fprintf(stderr, "Average number of unique points per cluster: %zu\n",
+	        navgcluster);
+	fprintf(stderr, "Number of iterations to converge: %zu\n", niters);
+}
+
+void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-er] [-h | -p] [-n clusters] file\n", argv0);
+	fprintf(stderr, "usage: %s [-erv] [-h | -p] [-n clusters] file\n", argv0);
 	exit(1);
 }
 
@@ -296,6 +323,9 @@ main(int argc, char *argv[])
 		break;
 	case 'r':
 		rflag = 1;
+		break;
+	case 'v':
+		vflag = 1;
 		break;
 	case 'h':
 		hflag = 1;
@@ -341,5 +371,7 @@ main(int argc, char *argv[])
 	initclusters(clusters, nclusters);
 	process();
 	printclusters();
+	if (vflag)
+		printstatistics();
 	return 0;
 }
