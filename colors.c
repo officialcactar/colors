@@ -159,8 +159,8 @@ initcluster_hue(struct cluster *c, int i)
 	c->center = hueselect(i);
 }
 
-void (*initcluster)(struct cluster *c, int i) = initcluster_greyscale;
-size_t initspace = 256;
+void (*initcluster)(struct cluster *c, int i);
+size_t initspace;
 
 void
 initclusters(struct cluster *c, size_t n)
@@ -320,6 +320,9 @@ main(int argc, char *argv[])
 
 	RB_INIT(&pointhead);
 	parseimg(argv[0], fillpoints);
+
+	initcluster = initcluster_greyscale;
+	initspace = 256;
 
 	if (rflag)
 		srand(time(NULL));
