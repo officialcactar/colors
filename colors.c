@@ -9,7 +9,7 @@
 #include "arg.h"
 #include "colors.h"
 #include "queue.h"
-#include "vector.h"
+#include "tree.h"
 
 #define LEN(x) (sizeof (x) / sizeof *(x))
 
@@ -17,140 +17,87 @@ struct point {
 	int x;
 	int y;
 	int z;
+	int freq;
 	struct cluster *c;
 	TAILQ_ENTRY(point) e;
+	RB_ENTRY(point) rb_e;
 };
 
 struct cluster {
 	struct point center;
 	TAILQ_HEAD(members, point) members;
-	size_t nmembers;
 };
 
 char *argv0;
 
 struct cluster *clusters;
 size_t nclusters = 8;
-struct vector points;
+RB_HEAD(pointtree, point) pointhead;
+size_t npoints;
 
 int eflag;
 int rflag;
 int hflag;
 int pflag;
-int mflag;
 
 int
 distance(struct point *p1, struct point *p2)
 {
 	int dx, dy, dz;
 
-	if (mflag) {
-		dx = abs(p1->x - p2->x);
-		dy = abs(p1->y - p2->y);
-		dz = abs(p1->z - p2->z);
-	} else {
-		dx = (p1->x - p2->x) * (p1->x - p2->x);
-		dy = (p1->y - p2->y) * (p1->y - p2->y);
-		dz = (p1->z - p2->z) * (p1->z - p2->z);
-	}
+	dx = (p1->x - p2->x) * (p1->x - p2->x);
+	dy = (p1->y - p2->y) * (p1->y - p2->y);
+	dz = (p1->z - p2->z) * (p1->z - p2->z);
 	return dx + dy + dz;
 }
+
+int
+pointcmp(struct point *p1, struct point *p2)
+{
+	struct point center = { 0 };
+
+	return distance(&center, p1) - distance(&center, p2);
+}
+
+RB_GENERATE(pointtree, point, rb_e, pointcmp)
 
 void
 adjmeans(struct cluster *c)
 {
 	struct point *p;
 	struct point newc = { 0 };
+	size_t nmembers = 0;
 	long x, y, z;
 
-	if (!c->nmembers)
+	if (TAILQ_EMPTY(&c->members))
 		return;
 
 	x = y = z = 0;
 	TAILQ_FOREACH(p, &c->members, e) {
-		x += p->x;
-		y += p->y;
-		z += p->z;
+		nmembers += p->freq;
+		x += p->x * p->freq;
+		y += p->y * p->freq;
+		z += p->z * p->freq;
 	}
-	newc.x = x / c->nmembers;
-	newc.y = y / c->nmembers;
-	newc.z = z / c->nmembers;
+	newc.x = x / nmembers;
+	newc.y = y / nmembers;
+	newc.z = z / nmembers;
 	c->center = newc;
 }
-
-struct cluster *curcluster;
-int
-pointcmp(const void *a, const void *b)
-{
-	struct point *p1 = *(struct point **)a;
-	struct point *p2 = *(struct point **)b;
-	int d1, d2;
-
-	d1 = distance(&curcluster->center, p1);
-	d2 = distance(&curcluster->center, p2);
-	return d1 - d2;
-}
-
-void
-adjmedians(struct cluster *c)
-{
-	struct point *p, **tab;
-	struct point newc = { 0 };
-	long x, y, z;
-	size_t i;
-
-	if (!c->nmembers)
-		return;
-
-	/* create a table out of the list to make sorting easy */
-	tab = malloc(c->nmembers * sizeof(*tab));
-	if (!tab)
-		err(1, "malloc");
-	i = 0;
-	TAILQ_FOREACH(p, &c->members, e)
-		tab[i++] = p;
-
-	qsort(tab, c->nmembers, sizeof(*tab), pointcmp);
-
-	/* calculate median */
-	x = tab[c->nmembers / 2]->x;
-	y = tab[c->nmembers / 2]->y;
-	z = tab[c->nmembers / 2]->z;
-	if (!(c->nmembers % 2)) {
-		x += tab[c->nmembers / 2 - 1]->x;
-		y += tab[c->nmembers / 2 - 1]->y;
-		z += tab[c->nmembers / 2 - 1]->z;
-		newc.x = x / 2;
-		newc.y = y / 2;
-		newc.z = z / 2;
-	} else {
-		newc.x = x;
-		newc.y = y;
-		newc.z = z;
-	}
-
-	c->center = newc;
-	free(tab);
-}
-
-void (*adjcluster)(struct cluster *c) = adjmeans;
 
 void
 adjclusters(struct cluster *c, size_t n)
 {
 	size_t i;
 
-	for (i = 0; i < n; i++) {
-		curcluster = &c[i];
-		adjcluster(&c[i]);
-	}
+	for (i = 0; i < n; i++)
+		adjmeans(&c[i]);
 }
 
 void
 initcluster_greyscale(struct cluster *c, int i)
 {
 	TAILQ_INIT(&c->members);
-	c->nmembers = 0;
 	c->center.x = i;
 	c->center.y = i;
 	c->center.z = i;
@@ -162,8 +109,9 @@ initcluster_pixel(struct cluster *c, int i)
 	struct point *p;
 
 	TAILQ_INIT(&c->members);
-	c->nmembers = 0;
-	p = vector_get(&points, i);
+	RB_FOREACH(p, pointtree, &pointhead)
+		if (i-- == 0)
+			break;
 	c->center = *p;
 }
 
@@ -208,7 +156,6 @@ void
 initcluster_hue(struct cluster *c, int i)
 {
 	TAILQ_INIT(&c->members);
-	c->nmembers = 0;
 	c->center = hueselect(i);
 }
 
@@ -235,7 +182,6 @@ addmember(struct cluster *c, struct point *p)
 {
 	TAILQ_INSERT_TAIL(&c->members, p, e);
 	p->c = c;
-	c->nmembers++;
 }
 
 void
@@ -243,7 +189,6 @@ delmember(struct cluster *c, struct point *p)
 {
 	TAILQ_REMOVE(&c->members, p, e);
 	p->c = NULL;
-	c->nmembers--;
 }
 
 int
@@ -256,7 +201,7 @@ void
 process(void)
 {
 	struct point *p;
-	int *dists, mind, mini, i, j, done = 0;
+	int *dists, mind, mini, i, done = 0;
 
 	dists = malloc(nclusters * sizeof(*dists));
 	if (!dists)
@@ -264,7 +209,7 @@ process(void)
 
 	while (!done) {
 		done = 1;
-		for (j = 0; (p = vector_get(&points, j)); j++) {
+		RB_FOREACH(p, pointtree, &pointhead) {
 			for (i = 0; i < nclusters; i++)
 				dists[i] = distance(p, &clusters[i].center);
 
@@ -298,7 +243,15 @@ process(void)
 void
 fillpoints(int r, int g, int b)
 {
-	struct point *p;
+	struct point *p, *res;
+	struct point n = { 0 };
+
+	n.x = r, n.y = g, n.z = b;
+	res = RB_FIND(pointtree, &pointhead, &n);
+	if (res) {
+		res->freq++;
+		return;
+	}
 
 	p = malloc(sizeof(*p));
 	if (!p)
@@ -306,8 +259,10 @@ fillpoints(int r, int g, int b)
 	p->x = r;
 	p->y = g;
 	p->z = b;
+	p->freq = 1;
 	p->c = NULL;
-	vector_add(&points, p);
+	npoints++;
+	RB_INSERT(pointtree, &pointhead, p);
 }
 
 void
@@ -316,7 +271,7 @@ printclusters(void)
 	int i;
 
 	for (i = 0; i < nclusters; i++)
-		if (clusters[i].nmembers || eflag)
+		if (!TAILQ_EMPTY(&clusters[i].members) || eflag)
 			printf("#%02x%02x%02x\n",
 			       clusters[i].center.x,
 			       clusters[i].center.y,
@@ -326,7 +281,7 @@ printclusters(void)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-emr] [-h | -p] [-n clusters] file\n", argv0);
+	fprintf(stderr, "usage: %s [-er] [-h | -p] [-n clusters] file\n", argv0);
 	exit(1);
 }
 
@@ -338,9 +293,6 @@ main(int argc, char *argv[])
 	ARGBEGIN {
 	case 'e':
 		eflag = 1;
-		break;
-	case 'm':
-		mflag = 1;
 		break;
 	case 'r':
 		rflag = 1;
@@ -366,16 +318,14 @@ main(int argc, char *argv[])
 	if (argc != 1)
 		usage();
 
-	vector_init(&points);
+	RB_INIT(&pointhead);
 	parseimg(argv[0], fillpoints);
 
-	if (mflag)
-		adjcluster = adjmedians;
 	if (rflag)
 		srand(time(NULL));
 	if (pflag) {
 		initcluster = initcluster_pixel;
-		initspace = vector_size(&points);
+		initspace = npoints;
 	}
 	if (hflag) {
 		initcluster = initcluster_hue;
