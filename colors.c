@@ -25,7 +25,7 @@ struct point {
 
 struct cluster {
 	struct point center;
-	TAILQ_HEAD(members, point) members;
+	TAILQ_HEAD(pointhead, point) pointhead;
 };
 
 char *argv0;
@@ -69,11 +69,11 @@ adjmeans(struct cluster *c)
 	size_t nmembers = 0;
 	long x, y, z;
 
-	if (TAILQ_EMPTY(&c->members))
+	if (TAILQ_EMPTY(&c->pointhead))
 		return;
 
 	x = y = z = 0;
-	TAILQ_FOREACH(p, &c->members, e) {
+	TAILQ_FOREACH(p, &c->pointhead, e) {
 		nmembers += p->freq;
 		x += p->x * p->freq;
 		y += p->y * p->freq;
@@ -97,7 +97,7 @@ adjclusters(struct cluster *c, size_t n)
 void
 initcluster_greyscale(struct cluster *c, int i)
 {
-	TAILQ_INIT(&c->members);
+	TAILQ_INIT(&c->pointhead);
 	c->center.x = i;
 	c->center.y = i;
 	c->center.z = i;
@@ -108,7 +108,7 @@ initcluster_pixel(struct cluster *c, int i)
 {
 	struct point *p;
 
-	TAILQ_INIT(&c->members);
+	TAILQ_INIT(&c->pointhead);
 	RB_FOREACH(p, pointtree, &pointhead)
 		if (i-- == 0)
 			break;
@@ -155,7 +155,7 @@ hueselect(int i)
 void
 initcluster_hue(struct cluster *c, int i)
 {
-	TAILQ_INIT(&c->members);
+	TAILQ_INIT(&c->pointhead);
 	c->center = hueselect(i);
 }
 
@@ -180,14 +180,14 @@ initclusters(struct cluster *c, size_t n)
 void
 addmember(struct cluster *c, struct point *p)
 {
-	TAILQ_INSERT_TAIL(&c->members, p, e);
+	TAILQ_INSERT_TAIL(&c->pointhead, p, e);
 	p->c = c;
 }
 
 void
 delmember(struct cluster *c, struct point *p)
 {
-	TAILQ_REMOVE(&c->members, p, e);
+	TAILQ_REMOVE(&c->pointhead, p, e);
 	p->c = NULL;
 }
 
@@ -271,7 +271,7 @@ printclusters(void)
 	int i;
 
 	for (i = 0; i < nclusters; i++)
-		if (!TAILQ_EMPTY(&clusters[i].members) || eflag)
+		if (!TAILQ_EMPTY(&clusters[i].pointhead) || eflag)
 			printf("#%02x%02x%02x\n",
 			       clusters[i].center.x,
 			       clusters[i].center.y,
