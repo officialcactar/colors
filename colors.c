@@ -19,13 +19,16 @@ struct point {
 	int z;
 	long freq;
 	struct cluster *c;
-	TAILQ_ENTRY(point) e;
 	RB_ENTRY(point) rb_e;
 };
 
 struct cluster {
 	struct point center;
-	TAILQ_HEAD(pointhead, point) pointhead;
+	long nelems;
+	struct {
+		size_t nmembers;
+		long x, y, z;
+	} tmp;
 };
 
 char *argv0;
@@ -65,43 +68,45 @@ pointcmp(struct point *p1, struct point *p2)
 RB_PROTOTYPE(pointtree, point, rb_e, pointcmp)
 RB_GENERATE(pointtree, point, rb_e, pointcmp)
 
-void
-adjmeans(struct cluster *c)
+int
+isempty(struct cluster *c)
 {
-	struct point *p;
-	struct point newc = { 0 };
-	size_t nmembers = 0;
-	long x, y, z;
-
-	if (TAILQ_EMPTY(&c->pointhead))
-		return;
-
-	x = y = z = 0;
-	TAILQ_FOREACH(p, &c->pointhead, e) {
-		nmembers += p->freq;
-		x += p->x * p->freq;
-		y += p->y * p->freq;
-		z += p->z * p->freq;
-	}
-	newc.x = x / nmembers;
-	newc.y = y / nmembers;
-	newc.z = z / nmembers;
-	c->center = newc;
+	return c->nelems == 0;
 }
 
 void
-adjclusters(struct cluster *c, size_t n)
+adjmeans(struct cluster *c, size_t n)
 {
+	struct point *p;
 	size_t i;
 
-	for (i = 0; i < n; i++)
-		adjmeans(&c[i]);
+	for (i = 0; i < n; i++) {
+		c[i].tmp.nmembers = 0;
+		c[i].tmp.x = 0;
+		c[i].tmp.y = 0;
+		c[i].tmp.z = 0;
+	}
+
+	RB_FOREACH(p, pointtree, &pointhead) {
+		p->c->tmp.nmembers += p->freq;
+		p->c->tmp.x += p->x * p->freq;
+		p->c->tmp.y += p->y * p->freq;
+		p->c->tmp.z += p->z * p->freq;
+	}
+
+	for (i = 0; i < n; i++) {
+		if (isempty(&c[i]))
+			continue;
+		c[i].center.x = c[i].tmp.x / c[i].tmp.nmembers;
+		c[i].center.y = c[i].tmp.y / c[i].tmp.nmembers;
+		c[i].center.z = c[i].tmp.z / c[i].tmp.nmembers;
+	}
 }
 
 void
 initcluster_greyscale(struct cluster *c, int i)
 {
-	TAILQ_INIT(&c->pointhead);
+	c->nelems = 0;
 	c->center.x = i;
 	c->center.y = i;
 	c->center.z = i;
@@ -112,7 +117,7 @@ initcluster_pixel(struct cluster *c, int i)
 {
 	struct point *p;
 
-	TAILQ_INIT(&c->pointhead);
+	c->nelems = 0;
 	RB_FOREACH(p, pointtree, &pointhead)
 		if (i-- == 0)
 			break;
@@ -159,7 +164,7 @@ hueselect(int i)
 void
 initcluster_hue(struct cluster *c, int i)
 {
-	TAILQ_INIT(&c->pointhead);
+	c->nelems = 0;
 	c->center = hueselect(i);
 }
 
@@ -184,14 +189,14 @@ initclusters(struct cluster *c, size_t n)
 void
 addmember(struct cluster *c, struct point *p)
 {
-	TAILQ_INSERT_TAIL(&c->pointhead, p, e);
+	c->nelems++;
 	p->c = c;
 }
 
 void
 delmember(struct cluster *c, struct point *p)
 {
-	TAILQ_REMOVE(&c->pointhead, p, e);
+	c->nelems--;
 	p->c = NULL;
 }
 
@@ -241,7 +246,7 @@ process(void)
 			}
 			addmember(&clusters[mini], p);
 		}
-		adjclusters(clusters, nclusters);
+		adjmeans(clusters, nclusters);
 	}
 }
 
@@ -276,7 +281,7 @@ printclusters(void)
 	int i;
 
 	for (i = 0; i < nclusters; i++)
-		if (!TAILQ_EMPTY(&clusters[i].pointhead) || eflag)
+		if (!isempty(&clusters[i]) || eflag)
 			printf("#%02x%02x%02x\n",
 			       clusters[i].center.x,
 			       clusters[i].center.y,
@@ -289,14 +294,11 @@ printstatistics(void)
 	struct point *p;
 	size_t ntotalpoints = 0;
 	size_t navgcluster = 0;
-	int i;
 
-	RB_FOREACH(p, pointtree, &pointhead)
+	RB_FOREACH(p, pointtree, &pointhead) {
 		ntotalpoints += p->freq;
-
-	for (i = 0; i < nclusters; i++)
-		TAILQ_FOREACH(p, &clusters[i].pointhead, e)
-			navgcluster++;
+		navgcluster++;
+	}
 	navgcluster /= nclusters;
 
 	fprintf(stderr, "Total number of points: %zu\n", ntotalpoints);
