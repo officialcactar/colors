@@ -17,7 +17,7 @@ struct point {
 	int x;
 	int y;
 	int z;
-	int freq;
+	long freq;
 	struct cluster *c;
 	TAILQ_ENTRY(point) e;
 	RB_ENTRY(point) rb_e;
