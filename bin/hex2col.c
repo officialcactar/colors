@@ -84,9 +84,7 @@ int
 main(int argc, char *argv[])
 {
 	char hex[8];
-	int  rgb[3],
-	color = 0,
-	truemod = 0;
+	int rgb[3], color = 0, truemod = 0;
 
 	/* either use the "true-colors" ANSI escape (works only with Xterm) */
 	if (argc > 1 && strncmp(argv[1], "-t", 2) == 0)
