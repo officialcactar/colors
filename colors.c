@@ -24,7 +24,7 @@ struct point {
 
 struct cluster {
 	struct point center;
-	long nelems;
+	size_t nelems;
 	struct {
 		size_t nmembers;
 		long x, y, z;
