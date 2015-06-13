@@ -18,7 +18,7 @@ struct point {
 	int z;
 	long freq;
 	struct cluster *c;
-	RB_ENTRY(point) rb_e;
+	RB_ENTRY(point) e;
 };
 
 struct cluster {
@@ -64,8 +64,8 @@ pointcmp(struct point *p1, struct point *p2)
 	b = p2->x << 16 | p2->y << 8 | p2->z;
 	return a - b;
 }
-RB_PROTOTYPE(pointtree, point, rb_e, pointcmp)
-RB_GENERATE(pointtree, point, rb_e, pointcmp)
+RB_PROTOTYPE(pointtree, point, e, pointcmp)
+RB_GENERATE(pointtree, point, e, pointcmp)
 
 int
 isempty(struct cluster *c)
