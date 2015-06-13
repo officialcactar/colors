@@ -8,7 +8,6 @@
 
 #include "arg.h"
 #include "colors.h"
-#include "queue.h"
 #include "tree.h"
 
 #define LEN(x) (sizeof (x) / sizeof *(x))

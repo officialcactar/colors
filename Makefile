@@ -14,7 +14,7 @@ all: $(BIN)
 $(BIN): $(OBJ)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $(OBJ) $(LDFLAGS)
 
-colors.o: arg.h colors.h queue.h tree.h
+colors.o: arg.h colors.h tree.h
 png.o: colors.h
 
 install: all
