@@ -16,7 +16,7 @@ struct point {
 	int x;
 	int y;
 	int z;
-	long freq;
+	long long freq;
 	struct cluster *c;
 	RB_ENTRY(point) e;
 };
@@ -25,8 +25,8 @@ struct cluster {
 	struct point center;
 	size_t nelems;
 	struct {
-		size_t nmembers;
-		long x, y, z;
+		long long nmembers;
+		long long x, y, z;
 	} tmp;
 };
 
