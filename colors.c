@@ -200,7 +200,7 @@ delmember(struct cluster *c, struct point *p)
 }
 
 int
-hasmember(struct cluster *c, struct point *p)
+ismember(struct cluster *c, struct point *p)
 {
 	return p->c == c;
 }
@@ -232,13 +232,13 @@ process(void)
 				}
 			}
 
-			if (hasmember(&clusters[mini], p))
+			if (ismember(&clusters[mini], p))
 				continue;
 
 			/* not done yet, move point to nearest cluster */
 			done = 0;
 			for (i = 0; i < nclusters; i++) {
-				if (hasmember(&clusters[i], p)) {
+				if (ismember(&clusters[i], p)) {
 					delmember(&clusters[i], p);
 					break;
 				}
