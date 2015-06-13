@@ -1,3 +1,4 @@
+/* See LICENSE file for copyright and license details. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -50,9 +51,9 @@ int
 quantization(int rgb[3])
 {
 	int i, tmp, index;
-	int distance = 442*442; /* it's always 442 somewhere */
+	int distance = 442 * 442; /* it's always 442 somewhere */
 
-	for (i=0, tmp=0; i<256; i++) {
+	for (i = 0, tmp = 0; i < 256; i++) {
 		tmp = (rgb[0] - map[i][0]) * (rgb[0] - map[i][0]) +
 		      (rgb[1] - map[i][1]) * (rgb[1] - map[i][1]) +
 		      (rgb[2] - map[i][2]) * (rgb[2] - map[i][2]);
@@ -73,23 +74,23 @@ hex2rgb(char *hex, int *rgb)
 {
 	int i;
 	char tmp[2];
-	for (i=0; i<3; i++) {
-		strncpy(tmp, hex + 1 + 2*i, 2);
+	for (i = 0; i < 3; i++) {
+		strncpy(tmp, hex + 1 + 2 * i, 2);
 		rgb[i] = strtol(tmp, NULL, 16);
 	}
 }
 
 int
-main (int argc, char **argv)
+main(int argc, char *argv[])
 {
 	char hex[8];
 	int  rgb[3],
-	     color = 0,
-	     truemod = 0;
+	color = 0,
+	truemod = 0;
 
-	/* either use the "true-colors" ANSI escape (works only with X term) */
+	/* either use the "true-colors" ANSI escape (works only with Xterm) */
 	if (argc > 1 && strncmp(argv[1], "-t", 2) == 0)
-			truemod = 1;
+		truemod = 1;
 
 	while (fgets(hex, 8, stdin)) {
 		if (hex[0] == '#') {
