@@ -36,6 +36,23 @@ hex2rgb(char *hex, int *rgb)
 	}
 }
 
+/*
+ * Calculate a score for the dominance of the color given by `mask` (3 bit
+ * representation of the RGB color, eg: 101 is magenta).
+ * For now, it sums the 1 bits, calculate the average value and substract the
+ * negative value of the color (eg, opposite of 101 is 010: green).
+ * TODO: take into consideration the "distance" between two colors for two
+ * bits masks.
+ * For example, with mask 101:
+ * 
+ * HECODE   RGB      SCORE
+ * -----------------------
+ * #500050  80,0,80  80
+ * #ff0000  255,0,0  127.5
+ *
+ * #ff0000 gets a higher score because it's brigther. But that's definitely not
+ * a nice magenta.
+ */
 double
 color_dominant(int *rgb, uint8_t mask)
 {
