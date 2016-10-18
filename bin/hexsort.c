@@ -52,12 +52,12 @@ double
 color_ratio(int *rgb, uint8_t mask)
 {
 	switch(mask) {
-		case 4: return RATIO(rgb[1],rgb[2]);
-		case 2: return RATIO(rgb[0],rgb[2]);
-		case 1: return RATIO(rgb[0],rgb[1]);
-		case 3: return RATIO(rgb[1],rgb[2]);
-		case 5: return RATIO(rgb[0],rgb[2]);
-		case 6: return RATIO(rgb[0],rgb[1]);
+	case 4: return RATIO(rgb[1],rgb[2]);
+	case 2: return RATIO(rgb[0],rgb[2]);
+	case 1: return RATIO(rgb[0],rgb[1]);
+	case 3: return RATIO(rgb[1],rgb[2]);
+	case 5: return RATIO(rgb[0],rgb[2]);
+	case 6: return RATIO(rgb[0],rgb[1]);
 	}
 	return 0;
 }
@@ -103,21 +103,20 @@ color_dominant(int *rgb, uint8_t mask)
 	 * the mask's value
 	 */
 	switch (mask) {
-		case 1:
-		case 2:
-		case 4:
-			pure     =  prgb[0] + prgb[1] + prgb[2];
-			negative = (nrgb[0] + nrgb[1] + nrgb[2])/2;
-			ratio    = 1 + negative * color_ratio(nrgb, mask);
-			return ((pure - negative) / ratio);
-
-		case 3:
-		case 5:
-		case 6:
-			pure     = (prgb[0] + prgb[1] + prgb[2])/2;
-			negative = nrgb[0] + nrgb[1] + nrgb[2];
-			ratio    = 1 + pure * color_ratio(prgb, mask);
-			return ((pure - negative) * ratio);
+	case 1:
+	case 2:
+	case 4:
+		pure     =  prgb[0] + prgb[1] + prgb[2];
+		negative = (nrgb[0] + nrgb[1] + nrgb[2])/2;
+		ratio    = 1 + negative * color_ratio(nrgb, mask);
+		return ((pure - negative) / ratio);
+	case 3:
+	case 5:
+	case 6:
+		pure     = (prgb[0] + prgb[1] + prgb[2])/2;
+		negative = nrgb[0] + nrgb[1] + nrgb[2];
+		ratio    = 1 + pure * color_ratio(prgb, mask);
+		return ((pure - negative) * ratio);
 	}
 
 	pure     = prgb[0] + prgb[1] + prgb[2];
