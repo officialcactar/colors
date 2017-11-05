@@ -319,6 +319,7 @@ int
 main(int argc, char *argv[])
 {
 	char *e;
+	int c;
 
 	ARGBEGIN {
 	case 'e':
@@ -351,8 +352,12 @@ main(int argc, char *argv[])
 	if (argc != 0)
 		usage();
 
+	if ((c = getc(stdin)) == EOF || ungetc(c, stdin) == EOF)
+		return 1;
+
 	RB_INIT(&pointhead);
-	parseimg(stdin, fillpoints);
+
+	(c == 'f' ? parseimg_ff : parseimg_png)(stdin, fillpoints);
 
 	initcluster = initcluster_greyscale;
 	initspace = 256;

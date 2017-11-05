@@ -6,7 +6,7 @@
 #include "colors.h"
 
 void
-parseimg(FILE *fp, void (*fn)(int, int, int))
+parseimg_png(FILE *fp, void (*fn)(int, int, int))
 {
 	png_structp png_struct_p;
 	png_infop png_info_p;
