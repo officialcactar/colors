@@ -311,7 +311,7 @@ printstatistics(void)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-erv] [-h | -p] [-n clusters] file\n", argv0);
+	fprintf(stderr, "usage: %s [-erv] [-h | -p] [-n clusters]\n", argv0);
 	exit(1);
 }
 
@@ -348,11 +348,11 @@ main(int argc, char *argv[])
 		usage();
 	} ARGEND;
 
-	if (argc != 1)
+	if (argc != 0)
 		usage();
 
 	RB_INIT(&pointhead);
-	parseimg(argv[0], fillpoints);
+	parseimg(stdin, fillpoints);
 
 	initcluster = initcluster_greyscale;
 	initspace = 256;

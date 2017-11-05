@@ -6,17 +6,13 @@
 #include "colors.h"
 
 void
-parseimg(char *f, void (*fn)(int, int, int))
+parseimg(FILE *fp, void (*fn)(int, int, int))
 {
 	png_structp png_struct_p;
 	png_infop png_info_p;
 	png_bytepp png_row_p;
 	png_uint_32 y, x, width, height;
 	int depth, color, interlace;
-	FILE *fp;
-
-	if (!(fp = fopen(f, "r")))
-		err(1, "fopen %s", f);
 
 	png_struct_p = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	png_info_p = png_create_info_struct(png_struct_p);
@@ -44,6 +40,4 @@ parseimg(char *f, void (*fn)(int, int, int))
 
 	png_free_data(png_struct_p, png_info_p, PNG_FREE_ALL, -1);
 	png_destroy_read_struct(&png_struct_p, &png_info_p, NULL);
-
-	fclose(fp);
 }

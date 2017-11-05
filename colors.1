@@ -9,12 +9,11 @@
 .Op Fl erv
 .Op Fl h | Fl p
 .Op Fl n Ar clusters
-.Ar file
 .Sh DESCRIPTION
 .Nm
-is a simple tool to extract colors from pictures.  By default it selects
-initial clusters based on greyscale
-steps.
+is a simple tool to extract colors from pictures.
+By default it selects initial clusters based on greyscale steps.
+It reads the data from stdin.
 .Sh OPTIONS
 .Bl -tag -width "-n clusters"
 .It Fl e
@@ -28,7 +27,8 @@ Select initial clusters from the hue domain.
 .It Fl p
 Select initial clusters from the image pixel space.
 .It Fl n Ar clusters
-Set the number of clusters.  It defaults to 8.
+Set the number of clusters.
+It defaults to 8.
 .El
 .Sh AUTHORS
 .An Dimitris Papastamos Aq Mt sin@2f30.org ,
