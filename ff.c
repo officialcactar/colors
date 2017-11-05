@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "colors.h"
+#include "util.h"
 
 void
 parseimg_ff(FILE *fp, void (*fn)(int, int, int))

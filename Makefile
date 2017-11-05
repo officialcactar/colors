@@ -6,7 +6,7 @@ MANPREFIX = $(PREFIX)/man
 CPPFLAGS = -I/usr/local/include
 CFLAGS = -Wall -O3
 LDFLAGS = -L/usr/local/lib -lpng
-OBJ = colors.o ff.o png.o
+OBJ = colors.o ff.o png.o util.o
 BIN = colors
 
 all: $(BIN)
@@ -14,9 +14,10 @@ all: $(BIN)
 $(BIN): $(OBJ)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $(OBJ) $(LDFLAGS)
 
-colors.o: arg.h colors.h tree.h
-ff.o: colors.h
-png.o: colors.h
+colors.o: arg.h colors.h tree.h util.h
+ff.o: colors.h util.h
+png.o: colors.h util.h
+util.o: util.h
 
 install: all
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
