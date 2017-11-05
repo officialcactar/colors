@@ -23,7 +23,7 @@ parseimg_png(FILE *fp, void (*fn)(int, int, int))
 	png_set_add_alpha(png_struct_p, 255, PNG_FILLER_AFTER);
 	png_set_gray_to_rgb(png_struct_p);
 	png_read_png(png_struct_p, png_info_p, PNG_TRANSFORM_STRIP_16 |
-	             PNG_TRANSFORM_PACKING | PNG_TRANSFORM_EXPAND , NULL);
+	             PNG_TRANSFORM_PACKING | PNG_TRANSFORM_EXPAND, NULL);
 	png_get_IHDR(png_struct_p, png_info_p, &width, &height, &depth,
 	             &color, &interlace, NULL, NULL);
 	png_row_p = png_get_rows(png_struct_p, png_info_p);
