@@ -6,3 +6,6 @@ strings(1) but for pictures.  For a given input file it outputs a
 colormap to stdout.
 
     # ./colors -p < input.png | ./bin/hex2html > output.html
+    
+    
+    # ./colors -n 16 -p < input.png | ./bin/toxrdb | xrdb -merge
